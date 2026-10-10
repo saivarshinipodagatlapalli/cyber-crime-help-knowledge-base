@@ -1,0 +1,634 @@
+
+import streamlit as st
+import re
+
+# --------------------------------------------------
+# CYBER CRIME HELP KNOWLEDGE BASE
+# Complete website in one Python file
+# --------------------------------------------------
+
+st.set_page_config(
+    page_title="CyberSaathi | Cyber Help",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+PORTAL = "https://cybercrime.gov.in/"
+HELPLINE = "1930"
+
+# Knowledge base: problems, keywords and safe solutions
+KB = [
+    {
+        "title": "UPI / Online Payment Fraud",
+        "category": "Financial Fraud",
+        "keywords": "upi money lost payment fraud gpay phonepe paytm transfer debited scam transaction",
+        "summary": "Money transfer ayindi, kani recipient genuine kaadu, leda unauthorized transaction jarigindi.",
+        "steps": [
+            "Immediately 1930 cyber financial fraud helpline ki call cheyyandi.",
+            "Official National Cyber Crime Reporting Portal lo complaint submit cheyyandi.",
+            "Mee bank official app / website / card venuka unna number dwara bank ni contact chesi transaction report cheyyandi.",
+            "Transaction ID, SMS alerts, screenshots, date and amount evidence ga save cheyyandi.",
+            "UPI PIN, passwords change cheyyandi if compromised. Bank instructions follow avvandi."
+        ],
+        "warning": "Money recover avuthundi ani evaru guarantee ivvaleru. Fast ga report cheyyadam important."
+    },
+    {
+        "title": "Phishing Link / Fake Website",
+        "category": "Phishing & Fake Websites",
+        "keywords": "phishing fake link suspicious url website clicked malicious link bank link parcel kyc",
+        "summary": "Fake website or message mee passwords, OTPs, bank details steal cheyadaniki try chestundi.",
+        "steps": [
+            "Inka link open cheyyakandi; personal details enter cheyyakandi.",
+            "Details enter chesunte affected account password ni trusted device nunchi change cheyyandi.",
+            "Bank details share chesunte bank official channel dwara immediately contact cheyyandi.",
+            "Suspicious message, sender, website address screenshots save cheyyandi.",
+            "Website or message ni relevant platform lo report cheyyandi; cybercrime.gov.in lo reporting options chudandi."
+        ],
+        "warning": "Website lo padlock symbol undatam okkate site genuine ani proof kaadu."
+    },
+    {
+        "title": "OTP / Bank Account Scam",
+        "category": "Financial Fraud",
+        "keywords": "otp scam bank account pin cvv password kyc verification account blocked call",
+        "summary": "Scammer bank employee laga act chesi OTP, PIN, CVV or login credentials adugutadu.",
+        "steps": [
+            "OTP, UPI PIN, CVV, password evariki share cheyyakandi.",
+            "Details share chesunte bank official number ki call chesi account/card security kosam request cheyyandi.",
+            "Unauthorized transactions unte immediately bank and 1930 ni contact cheyyandi.",
+            "Banking passwords and compromised credentials secure cheyyandi.",
+            "Call logs, SMS, numbers, transaction details save chesi complaint report cheyyandi."
+        ],
+        "warning": "Genuine bank support kuda mee UPI PIN or OTP ni caller ki cheppamani adagakoodadu."
+    },
+    {
+        "title": "Instagram / Facebook Account Hacked",
+        "category": "Social Media & Account Hacking",
+        "keywords": "instagram facebook hacked account takeover social media login password changed",
+        "summary": "Mee social media account ni vere person access chestunnadu or login avvatledu.",
+        "steps": [
+            "Official app or website recovery option use cheyyandi.",
+            "Linked email account kuda secure chesi password change cheyyandi.",
+            "Recovery taruvatha unknown sessions logout chesi two-factor authentication enable cheyyandi.",
+            "Mee friends ki suspicious messages or money requests ni nammoddani inform cheyyandi.",
+            "Threats, impersonation or financial loss unte evidence save chesi platform and official cybercrime portal lo report cheyyandi."
+        ],
+        "warning": "Account recovery kosam strangers ki money, OTP or recovery codes ivvakandi."
+    },
+    {
+        "title": "Email Account Hacked",
+        "category": "Social Media & Account Hacking",
+        "keywords": "gmail email hacked inbox password reset recovery account login unknown device",
+        "summary": "Someone mee email account ni access chestunnaru or password marcharu.",
+        "steps": [
+            "Email provider official account recovery page use cheyyandi.",
+            "Trusted device nunchi password marchi unknown sessions sign out cheyyandi.",
+            "Recovery email, phone number, forwarding rules and app access check cheyyandi.",
+            "Email tho linked bank and social accounts passwords kuda secure cheyyandi.",
+            "Financial loss or threats unte evidence save chesi report cheyyandi."
+        ],
+        "warning": "Recovery codes and verification codes evarithonu share cheyyakandi."
+    },
+    {
+        "title": "Fake Shopping Website / Online Shopping Scam",
+        "category": "Shopping & Job Scams",
+        "keywords": "fake shopping site online order product not delivered seller scam refund ecommerce",
+        "summary": "Payment chesina product raledu, fake item vachindi, leda seller refund ivvatledu.",
+        "steps": [
+            "Order confirmation, invoice, seller details and payment proof save cheyyandi.",
+            "Shopping platform official dispute or refund process use cheyyandi.",
+            "Payment unauthorized or fraudulent ayithe bank/payment provider ni contact cheyyandi.",
+            "Financial cyber fraud suspicion unte 1930 ki call chesi portal lo report cheyyandi.",
+            "Consumer grievance kosam National Consumer Helpline 1915 ni contact cheyyavachu."
+        ],
+        "warning": "Refund kosam malli payment cheyyamani, OTP cheppamani adigithe jagratha."
+    },
+    {
+        "title": "Fake Job / Work-from-Home Scam",
+        "category": "Shopping & Job Scams",
+        "keywords": "job scam work from home part time task job offer registration fee telegram investment",
+        "summary": "Fake recruiter job, easy income or task earnings promise chesi money adugutadu.",
+        "steps": [
+            "Job offer, company website and recruiter identity independently verify cheyyandi.",
+            "Registration, training or task unlock fee ani money transfer cheyyakandi without verification.",
+            "Already pay chesunte transaction proof, chat and phone numbers save cheyyandi.",
+            "Money fraud jarigithe 1930 and official cybercrime portal use cheyyandi.",
+            "Platform lo recruiter/account ni report cheyyandi."
+        ],
+        "warning": "Guaranteed high income for simple tasks is a warning sign."
+    },
+    {
+        "title": "Loan App / Instant Loan Scam",
+        "category": "Financial Fraud",
+        "keywords": "loan app instant loan harassment fake lender processing fee contacts threats",
+        "summary": "Fake lender upfront fee aduguthadu, personal data misuse chestadu or threats chestadu.",
+        "steps": [
+            "Lender and app legitimacy ni official sources dwara verify cheyyandi.",
+            "Unnecessary permissions revoke cheyyandi and suspicious app ni safe ga remove cheyyandi.",
+            "Threatening calls, messages, payment demands and app details evidence ga save cheyyandi.",
+            "Banking credentials leak ayithe bank ni contact cheyyandi; unauthorized debit ayithe 1930 ki report cheyyandi.",
+            "Threats, extortion or data misuse ni cybercrime portal and relevant platform lo report cheyyandi."
+        ],
+        "warning": "Threatening messages ki respond avvadaniki additional money pay cheyyakandi."
+    },
+    {
+        "title": "Cyber Blackmail / Sextortion",
+        "category": "Harassment & Blackmail",
+        "keywords": "blackmail sextortion intimate photos threaten private images video call extortion",
+        "summary": "Private images or information publish chestamani threaten chesi money demand chestunnaru.",
+        "steps": [
+            "Money pay cheyyakandi; additional images or personal details pampakandi.",
+            "Messages, usernames, profile links, timestamps and threats evidence ga preserve cheyyandi.",
+            "Evidence save chesaka account ni platform lo report and block cheyyandi, if safe.",
+            "India lo cybercrime.gov.in lo relevant complaint category select chesi report cheyyandi.",
+            "Immediate physical danger unte local police or 112 ni contact cheyyandi."
+        ],
+        "warning": "Victim ni blame cheyyakandi. Minor involved ayithe trusted adult and appropriate authorities help teesukondi."
+    },
+    {
+        "title": "Cyberbullying / Online Harassment",
+        "category": "Harassment & Blackmail",
+        "keywords": "cyberbullying harassment trolling abusive messages threats online stalking",
+        "summary": "Online lo repeated abuse, threats, harassment or unwanted contact jarugutondi.",
+        "steps": [
+            "Messages, account names, URLs and timestamps preserve cheyyandi.",
+            "Privacy settings tighten chesi unwanted accounts ni block/restrict cheyyandi.",
+            "Platform reporting tool use cheyyandi.",
+            "Threats or serious abuse unte official cybercrime portal or local police ni contact cheyyandi.",
+            "Immediate danger unte 112 ki call cheyyandi."
+        ],
+        "warning": "Evidence public ga repost cheyyakandi; private information protect cheyyandi."
+    },
+    {
+        "title": "Identity Theft / Fake Profile",
+        "category": "Identity & Privacy",
+        "keywords": "identity theft impersonation fake profile my photos copied aadhaar personal data misuse",
+        "summary": "Someone mee name, photos or personal information use chesi fake identity create chesaru.",
+        "steps": [
+            "Fake profile URL, screenshots and messages save cheyyandi.",
+            "Platform lo impersonation report submit cheyyandi.",
+            "Mee account privacy settings and passwords review cheyyandi.",
+            "Financial or identity documents misuse suspicion unte affected institution ni contact cheyyandi.",
+            "Cybercrime portal lo appropriate category select chesi complaint cheyyandi."
+        ],
+        "warning": "Public posts lo Aadhaar, bank details or other sensitive documents upload cheyyakandi."
+    },
+    {
+        "title": "SIM Swap / Mobile Number Misuse",
+        "category": "Identity & Privacy",
+        "keywords": "sim swap sim stopped no network mobile number hacked otp not receiving duplicate sim",
+        "summary": "Mee phone sudden ga network lose ayindi or mee number ni vere SIM lo activate chesaru ani suspicion undi.",
+        "steps": [
+            "Mobile operator official support ni vere phone nunchi immediately contact cheyyandi.",
+            "SIM and number ni secure cheyyamani request cheyyandi.",
+            "Bank accounts and email security check chesi affected institutions ni inform cheyyandi.",
+            "Unauthorized transactions unte 1930 ki call cheyyandi.",
+            "Operator complaint reference and relevant messages save cheyyandi."
+        ],
+        "warning": "OTP messages stop ayithe bank account and email compromise ayindemo ani promptly check cheyyandi."
+    },
+    {
+        "title": "Malware / Suspicious App",
+        "category": "Device & Malware",
+        "keywords": "malware virus spyware suspicious apk remote access app phone hacked popups",
+        "summary": "Unknown app/device software mee information access chestundi ani suspicion undi.",
+        "steps": [
+            "Suspicious app tho interaction stop cheyyandi; banking apps ni aa device lo use cheyyakandi.",
+            "Trusted device nunchi important passwords change cheyyandi if compromise suspect chesthe.",
+            "Unknown accessibility permissions, device administrator access and installed apps review cheyyandi.",
+            "Trusted security software tho scan cheyyandi and device update cheyyandi.",
+            "Bank access or financial loss jarigithe bank and cybercrime helpline ni contact cheyyandi."
+        ],
+        "warning": "Unknown person cheppina remote-access app install cheyyakandi. Evidence avasaram unte reset mundu preserve cheyyandi."
+    },
+    {
+        "title": "Ransomware / Files Locked",
+        "category": "Device & Malware",
+        "keywords": "ransomware files encrypted locked ransom demand computer files inaccessible",
+        "summary": "Computer files lock ayyi ransom payment demand message kanipistondi.",
+        "steps": [
+            "Affected device ni network nunchi disconnect cheyyandi to limit spread.",
+            "Device ni IT/security professional guidance lekunda repeatedly modify cheyyakandi.",
+            "Ransom note and relevant logs preserve cheyyandi; evidence delete cheyyakandi.",
+            "Organization device ayithe IT/security team ki immediately inform cheyyandi.",
+            "Clean device nunchi important account passwords secure cheyyandi.",
+            "Official cybercrime portal lo report cheyyandi."
+        ],
+        "warning": "Ransom pay chesina files recover avuthayani guarantee ledu."
+    },
+    {
+        "title": "Cryptocurrency / Investment Scam",
+        "category": "Financial Fraud",
+        "keywords": "crypto scam bitcoin investment trading guaranteed returns fake investment profit",
+        "summary": "Fake investment platform or person guaranteed profits promise chesi funds collect chestunnaru.",
+        "steps": [
+            "Additional money pampadam stop cheyyandi.",
+            "Wallet addresses, transaction IDs, chats and platform details preserve cheyyandi.",
+            "Exchange or payment provider official support ni immediately contact cheyyandi.",
+            "Money fraud suspicion unte 1930 and cybercrime.gov.in lo report cheyyandi.",
+            "Recovery agent ani contact chese strangers ki money or wallet seed phrase ivvakandi."
+        ],
+        "warning": "Guaranteed returns and paid crypto recovery promises common scam warning signs."
+    },
+    {
+        "title": "QR Code / Collect Request Scam",
+        "category": "Financial Fraud",
+        "keywords": "qr code scan receive money collect request upi collect pin scam",
+        "summary": "Money receive avvadaniki QR scan cheyyamani or UPI PIN enter cheyyamani aduguthunnaru.",
+        "steps": [
+            "Money receive cheyyadaniki UPI PIN enter cheyyalsina avasaram ledani gurthunchukondi.",
+            "Unknown collect requests ni reject cheyyandi.",
+            "PIN enter chesi unauthorized debit ayithe bank ni contact chesi 1930 ki call cheyyandi.",
+            "Transaction reference and screenshots save cheyyandi.",
+            "Official cybercrime portal lo complaint submit cheyyandi."
+        ],
+        "warning": "QR code scan cheyyadam or collect request approve cheyyadam payment initiate cheyyavachu."
+    },
+    {
+        "title": "Credit / Debit Card Fraud",
+        "category": "Financial Fraud",
+        "keywords": "credit card debit card unauthorized transaction card stolen cvv online charge",
+        "summary": "Mee card nunchi unknown transaction jarigindi or card details leak ayyayani suspicion.",
+        "steps": [
+            "Bank official app or phone number dwara card ni immediately block/freeze cheyyandi.",
+            "Unauthorized transaction ni bank ki report chesi dispute process adugandi.",
+            "Financial cyber fraud kosam 1930 ki call cheyyandi.",
+            "Transaction alerts and bank complaint reference preserve cheyyandi.",
+            "Banking password and compromised credentials secure cheyyandi."
+        ],
+        "warning": "Full card number, CVV or OTP ni ee website lo enter cheyyakandi."
+    },
+    {
+        "title": "WhatsApp Account Hijacking",
+        "category": "Social Media & Account Hacking",
+        "keywords": "whatsapp hacked linked device verification code account taken over messages money",
+        "summary": "Someone mee WhatsApp account access chestunnaru or contacts ki scam messages pampistunnaru.",
+        "steps": [
+            "Mee number tho official WhatsApp app lo malli register cheyyadaniki try cheyyandi.",
+            "Verification code ni evariki share cheyyakandi.",
+            "Account access vachaka linked devices review chesi unknown devices logout cheyyandi.",
+            "Two-step verification enable cheyyandi.",
+            "Friends and family ki scam messages ignore cheyyamani cheppandi; financial loss unte report cheyyandi."
+        ],
+        "warning": "WhatsApp support ani cheppe strangers ki verification code ivvakandi."
+    },
+    {
+        "title": "Suspicious Email Attachment",
+        "category": "Phishing & Fake Websites",
+        "keywords": "email attachment virus invoice document file malware clicked download",
+        "summary": "Unknown email attachment download/open chesaru or suspicious file run chesaru.",
+        "steps": [
+            "File ni open/run cheyyadam stop cheyyandi.",
+            "File run ayithe device ni network nunchi disconnect cheyyandi if compromise suspect chesthe.",
+            "Trusted security software tho scan cheyyandi.",
+            "Passwords enter chesunte trusted device nunchi credentials change cheyyandi.",
+            "Work device ayithe IT team ki report cheyyandi; loss or crime jarigithe evidence preserve chesi report cheyyandi."
+        ],
+        "warning": "Unknown attachments ni disable chesina security warnings tho force ga open cheyyakandi."
+    },
+    {
+        "title": "Unknown Loan / Bank Recovery Threats",
+        "category": "Harassment & Blackmail",
+        "keywords": "recovery agent threats loan harassment contacts photos morphed abusive calls",
+        "summary": "Unknown callers loan recovery ani threaten chestunnaru or contacts/photos misuse chestunnaru.",
+        "steps": [
+            "Caller identity and lender details ni independently verify cheyyandi.",
+            "Threatening messages, phone numbers, call times and payment requests preserve cheyyandi.",
+            "Bank or lender official grievance channel dwara complaint raise cheyyandi.",
+            "Personal data misuse or extortion unte cybercrime portal or police ni contact cheyyandi.",
+            "Immediate threat unte 112 ki call cheyyandi."
+        ],
+        "warning": "Threats valla unknown personal account ki money transfer cheyyakandi."
+    },
+    {
+        "title": "General Cyber Safety / Unknown Problem",
+        "category": "General Help",
+        "keywords": "other help cyber safety suspicious online problem scam unknown problem what to do",
+        "summary": "Mee issue list lo lekapothe first digital safety steps follow avvandi.",
+        "steps": [
+            "Suspicious person ki money, OTP, PIN, password or personal documents pampakandi.",
+            "Messages, links, usernames and relevant transaction details evidence ga save cheyyandi.",
+            "Affected account or device ni secure cheyyandi using official recovery/support channels.",
+            "Financial loss ayithe 1930 ki call cheyyandi.",
+            "Official National Cyber Crime Reporting Portal lo correct complaint category select cheyyandi."
+        ],
+        "warning": "Ee website guidance tool matrame; police investigation or official complaint registration cheyyadu."
+    }
+]
+
+CATEGORIES = ["All"] + list(dict.fromkeys(x["category"] for x in KB))
+
+
+# ---------------------- STYLING ----------------------
+
+st.markdown("""
+<style>
+    .stApp {
+        background: linear-gradient(180deg, #f5f8ff 0%, #ffffff 42%);
+    }
+    .block-container {
+        max-width: 1120px;
+        padding-top: 1.8rem;
+        padding-bottom: 3rem;
+    }
+    .hero {
+        padding: 28px;
+        border-radius: 22px;
+        background: linear-gradient(125deg, #101d48, #1659a7);
+        color: white;
+        margin-bottom: 22px;
+    }
+    .hero h1 { color: white; margin-bottom: 8px; }
+    .hero p { color: #e4efff; font-size: 1.05rem; }
+    .small-note { color: #52627a; font-size: 0.9rem; }
+    div.stButton > button {
+        border-radius: 10px;
+        min-height: 42px;
+    }
+    div[data-testid="stExpander"] {
+        border-radius: 12px;
+        border-color: #dce5f2;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
+def normalize(text):
+    return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
+
+
+def find_results(query, category):
+    q = normalize(query)
+    words = set(q.split())
+    results = []
+
+    for item in KB:
+        if category != "All" and item["category"] != category:
+            continue
+
+        title = normalize(item["title"])
+        keywords = normalize(item["keywords"])
+        summary = normalize(item["summary"])
+        combined = title + " " + keywords + " " + summary
+
+        score = 0
+
+        if q and q in title:
+            score += 10
+        if q and q in keywords:
+            score += 8
+        if q and q in summary:
+            score += 5
+
+        for word in words:
+            if len(word) < 2:
+                continue
+            if word in title.split():
+                score += 4
+            elif word in keywords.split():
+                score += 3
+            elif word in summary.split():
+                score += 1
+
+        if score > 0:
+            results.append((score, item))
+
+    results.sort(key=lambda x: x[0], reverse=True)
+    return [item for _, item in results]
+
+
+def show_solution(item):
+    st.subheader("🛡️ " + item["title"])
+    st.caption("Category: " + item["category"])
+    st.write(item["summary"])
+
+    st.markdown("#### What should you do?")
+    for i, step in enumerate(item["steps"], start=1):
+        st.markdown(f"**{i}.** {step}")
+
+    st.warning("Important: " + item["warning"])
+
+    with st.expander("📌 Evidence checklist"):
+        st.markdown("""
+        - Screenshots of messages or suspicious profiles
+        - Transaction ID, date and amount (if applicable)
+        - Relevant phone numbers, email IDs or website URLs
+        - Complaint reference numbers
+        - Original messages and files, if safe to preserve
+
+        **Never upload passwords, OTPs, UPI PINs or full card details.**
+        """)
+
+    st.link_button(
+        "Report / Get official help ↗",
+        PORTAL,
+        use_container_width=True
+    )
+
+
+# ---------------------- SIDEBAR ----------------------
+
+with st.sidebar:
+    st.title("🛡️ CyberSaathi")
+    st.caption("Cyber Crime Help Knowledge Base")
+    st.divider()
+
+    page = st.radio(
+        "Navigate",
+        ["Home", "Find a Solution", "All Problems", "Cyber Safety Tips", "About Project"]
+    )
+
+    st.divider()
+    st.markdown("### 🚨 Emergency Help")
+    st.markdown("**1930** — Financial cyber fraud helpline")
+    st.link_button("Official Cyber Crime Portal", PORTAL, use_container_width=True)
+    st.caption("India • Always verify advice with official sources.")
+
+
+# ---------------------- HOME PAGE ----------------------
+
+if page == "Home":
+    st.markdown("""
+    <div class="hero">
+        <h1>CyberSaathi 🛡️</h1>
+        <p>Your friendly guide to cybercrime awareness, prevention and reporting.</p>
+        <p>Find a problem. Understand the risk. Follow safe steps.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.subheader("How can we help you today?")
+    st.write("Choose your problem or search using simple words.")
+
+    query = st.text_input(
+        "Describe your problem",
+        placeholder="e.g. money debited, account hacked, fake link..."
+    )
+
+    if st.button("🔎 Find My Solution", type="primary", use_container_width=True):
+        st.session_state["search_query"] = query
+        st.session_state["search_category"] = "All"
+        st.session_state["show_search_results"] = True
+        st.rerun()
+
+    st.markdown("### Popular help topics")
+
+    popular = [
+        "UPI / Online Payment Fraud",
+        "Phishing Link / Fake Website",
+        "Instagram / Facebook Account Hacked",
+        "Cyber Blackmail / Sextortion",
+        "Fake Job / Work-from-Home Scam",
+        "Malware / Suspicious App"
+    ]
+
+    cols = st.columns(2)
+    for i, title in enumerate(popular):
+        with cols[i % 2]:
+            if st.button("🛡️ " + title, key="home_" + title,
+                         use_container_width=True):
+                st.session_state["selected_problem"] = title
+                st.session_state["show_search_results"] = False
+                st.session_state["open_problem"] = True
+                st.rerun()
+
+    st.markdown("---")
+    st.subheader("Need urgent help?")
+    st.error(
+        "If money was lost through cyber financial fraud in India, "
+        "call 1930 immediately and report through the official portal."
+    )
+    st.link_button("Open National Cyber Crime Reporting Portal ↗", PORTAL)
+
+
+# ---------------------- FIND SOLUTION ----------------------
+
+elif page == "Find a Solution":
+    st.title("🔎 Find a Solution")
+    st.write("Search using a problem name or words you remember.")
+
+    query = st.text_input(
+        "What happened?",
+        placeholder="Example: I clicked a fake bank link"
+    )
+    category = st.selectbox("Choose a category", CATEGORIES)
+
+    if st.button("Search Knowledge Base", type="primary"):
+        st.session_state["search_query"] = query
+        st.session_state["search_category"] = category
+        st.session_state["show_search_results"] = True
+
+    if st.session_state.get("show_search_results", False):
+        q = st.session_state.get("search_query", "")
+        cat = st.session_state.get("search_category", "All")
+        results = find_results(q, cat)
+
+        st.markdown("---")
+        if results:
+            st.success(f"Found {len(results)} relevant help topic(s).")
+            for item in results:
+                with st.expander("🛡️ " + item["title"], expanded=(len(results) == 1)):
+                    show_solution(item)
+        else:
+            st.warning(
+                "Exact match dorakaledu. Vere keywords try cheyyandi, "
+                "category change cheyyandi, or General Help open cheyyandi."
+            )
+            general = next(x for x in KB if x["category"] == "General Help")
+            show_solution(general)
+
+    if st.session_state.get("open_problem", False):
+        title = st.session_state.get("selected_problem", "")
+        item = next((x for x in KB if x["title"] == title), None)
+        if item:
+            st.markdown("---")
+            show_solution(item)
+
+
+# ---------------------- ALL PROBLEMS ----------------------
+
+elif page == "All Problems":
+    st.title("📚 All Cybercrime Help Topics")
+    st.write(f"Browse the knowledge base: {len(KB)} help topics.")
+
+    category = st.selectbox("Filter by category", CATEGORIES)
+    filtered = [
+        item for item in KB
+        if category == "All" or item["category"] == category
+    ]
+
+    for item in filtered:
+        with st.expander("🛡️ " + item["title"]):
+            show_solution(item)
+
+
+# ---------------------- SAFETY TIPS ----------------------
+
+elif page == "Cyber Safety Tips":
+    st.title("🔐 Cyber Safety Tips")
+
+    tips = [
+        ("Never share OTPs or PINs",
+         "Banks and legitimate support staff should not ask you to reveal your OTP or UPI PIN to them."),
+        ("Use strong, unique passwords",
+         "Use different passwords for important accounts and enable two-factor authentication."),
+        ("Verify links before clicking",
+         "Check the actual domain. Avoid unexpected login links sent through SMS, email or messaging apps."),
+        ("Never pay to receive money",
+         "Be careful with QR codes and collect requests. Enter your UPI PIN only when you intend to authorize a payment."),
+        ("Keep devices updated",
+         "Update your phone, computer, browser and security software regularly."),
+        ("Protect your personal information",
+         "Avoid sharing identity documents, financial details or private images with untrusted people."),
+        ("Preserve evidence",
+         "Keep relevant messages, URLs, transaction references and screenshots when reporting an incident."),
+        ("Report quickly",
+         "For financial cyber fraud in India, call 1930 promptly and use the official cybercrime portal.")
+    ]
+
+    for title, description in tips:
+        with st.expander(title, expanded=True):
+            st.write(description)
+
+    st.link_button("Official safety and reporting resources ↗", PORTAL)
+
+
+# ---------------------- ABOUT PROJECT ----------------------
+
+elif page == "About Project":
+    st.title("ℹ️ About CyberSaathi")
+
+    st.markdown("""
+    **CyberSaathi — Cyber Crime Help Knowledge Base** is an educational
+    project designed to help users understand common cybercrime problems.
+
+    ### Objectives
+    - Provide easy-to-understand cybersecurity guidance.
+    - Organize solutions by cybercrime category.
+    - Help users find relevant information through keyword search.
+    - Direct users to official reporting resources.
+
+    ### Technology Stack
+    - Python
+    - Streamlit
+    - Rule-based keyword search
+    - Embedded knowledge base
+
+    ### Limitations
+    - Search matches predefined articles; it is not a fully trained AI chatbot.
+    - Not every possible cybercrime situation is covered.
+    - Guidance is informational and does not replace police, bank or legal advice.
+    - Complaints are NOT submitted by this application.
+    """)
+
+    st.info(
+        "For a problem not covered here, use the official National Cyber "
+        "Crime Reporting Portal or contact the appropriate authorities."
+    )
+    st.link_button("Visit Official Portal ↗", PORTAL)
+
+# Footer
+st.divider()
+st.caption(
+    "CyberSaathi • Educational project • "
+    "Do not enter personal, financial or confidential information here."
+)
